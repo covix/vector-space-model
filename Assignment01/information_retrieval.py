@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import nltk
 from nltk import word_tokenize
 import codecs
 import config as cfg
@@ -9,6 +8,13 @@ import math
 
 
 def calc_scores(terms):
+    '''
+    The Tf-idf measure is calculated for the given terms and all the documents placed in the specified directory. The
+    path of the directory must be set in the config.py file.
+
+    :param terms: all the terms at least one user has interests in.
+    :return: tf-idf measure for all terms and documents.
+    '''
     if not os.path.isdir(cfg.doc_path):
         raise IOError('Directory does not exist: %s' % cfg.doc_path)
     docs = os.listdir(cfg.doc_path)
@@ -32,6 +38,13 @@ def calc_scores(terms):
 
 
 def term_frequency(terms, tf, tokens):
+    '''
+    Calculates the term frequency for the tokens of a given document
+    :param terms: terms to calculate the frequency for
+    :param tf:
+    :param tokens: tokens of document
+    :return: dictionary with frequencies of tokens
+    '''
     term_freq = dict()
     for token in tokens:
         if token in terms:
@@ -42,6 +55,14 @@ def term_frequency(terms, tf, tokens):
 
 
 def score(docs, idf, terms, tf):
+    '''
+
+    :param docs:
+    :param idf:
+    :param terms:
+    :param tf:
+    :return:
+    '''
     tf_idf = dict()
     for d in range(len(docs)):
         for term in terms:
@@ -51,8 +72,14 @@ def score(docs, idf, terms, tf):
                 tf_idf[term, d] = math.log(1 + tf[d][term]) * idf[term]
     return tf_idf
 
-
 def invers_document_freq(num_docs, terms, tf):
+    '''
+
+    :param num_docs:
+    :param terms:
+    :param tf:
+    :return:
+    '''
     idf = {}
     for term in terms:
         df = len([term_freq[term] for term_freq in tf if term in term_freq.keys()])
@@ -62,7 +89,29 @@ def invers_document_freq(num_docs, terms, tf):
             idf[term] = math.log(num_docs / df)
     return idf
 
+def assign_documents(tf_idf):
+    num_docs = len(os.listdir(cfg.doc_path))
+    docs_for_user = {}
+    for user in cfg.users:
+        scores =[]
+        for i in range(num_docs):
+            score = 0
+            for interest in cfg.users[user]:
+                score += tf_idf[(interest, i)]
+            scores.append(score)
+
+        #scores_user[user] = scores
+        relevant_docs = []
+        for doc_index, s in enumerate(scores):
+            if s >= cfg.threshold:
+                relevant_docs.append(doc_index)
+        docs_for_user[user] = relevant_docs
+    return docs_for_user
+
+
+
 
 if __name__ == '__main__':
     terms = sorted({term for value in cfg.users.itervalues() for term in value})
-    matrix = calc_scores(terms)
+    scores = calc_scores(terms)
+    print assign_documents(scores)
