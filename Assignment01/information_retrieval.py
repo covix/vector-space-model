@@ -28,7 +28,7 @@ def calc_scores(terms):
             tokens = word_tokenize(doc_string)
 
             # TODO: Frequency for 'data science' cannot be found because it is two words and we loop over single words.
-            term_frequency(terms, tf, tokens)
+            tf.append(term_frequency(terms, tokens))
 
     idf = invers_document_freq(num_docs, terms, tf)
 
@@ -37,11 +37,10 @@ def calc_scores(terms):
     return tf_idf
 
 
-def term_frequency(terms, tf, tokens):
+def term_frequency(terms, tokens):
     '''
     Calculates the term frequency for the tokens of a given document
     :param terms: terms to calculate the frequency for
-    :param tf:
     :param tokens: tokens of document
     :return: dictionary with frequencies of tokens
     '''
@@ -51,17 +50,17 @@ def term_frequency(terms, tf, tokens):
             for term in terms:
                 if term == token:
                     term_freq[term] = term_freq.get(term, 0) + 1
-    tf.append(term_freq)
+    return term_freq
 
 
 def score(docs, idf, terms, tf):
     '''
-
-    :param docs:
-    :param idf:
-    :param terms:
-    :param tf:
-    :return:
+    Calculates the actual score by multiplying tf and idf.
+    :param docs: list of documents
+    :param idf: collection of inverse document frequencies
+    :param terms: list of terms
+    :param tf: collection of term frequencies
+    :return: tf-idf
     '''
     tf_idf = dict()
     for d in range(len(docs)):
@@ -72,13 +71,14 @@ def score(docs, idf, terms, tf):
                 tf_idf[term, d] = math.log(1 + tf[d][term]) * idf[term]
     return tf_idf
 
+
 def invers_document_freq(num_docs, terms, tf):
     '''
-
-    :param num_docs:
-    :param terms:
-    :param tf:
-    :return:
+    Calculates the inverse document frequency (IDF).
+    :param num_docs: number of documents.
+    :param terms: list of terms
+    :param tf: collection of term frequencies.
+    :return: idf
     '''
     idf = {}
     for term in terms:
@@ -89,18 +89,26 @@ def invers_document_freq(num_docs, terms, tf):
             idf[term] = math.log(num_docs / df)
     return idf
 
+
 def assign_documents(tf_idf):
+    '''
+    Assigns each user the documents of interest. To do this a threshold is used. In case the score of a
+    document is higher than the threshold, it is considered relevant for the user. Documents are represented by their
+    ID.
+    :param tf_idf: score for given term and document.
+    :return: returns a collection of users with their documents of interest.
+    '''
     num_docs = len(os.listdir(cfg.doc_path))
     docs_for_user = {}
     for user in cfg.users:
-        scores =[]
+        scores = []
         for i in range(num_docs):
             score = 0
             for interest in cfg.users[user]:
                 score += tf_idf[(interest, i)]
             scores.append(score)
 
-        #scores_user[user] = scores
+        # scores_user[user] = scores
         relevant_docs = []
         for doc_index, s in enumerate(scores):
             if s >= cfg.threshold:
@@ -109,9 +117,8 @@ def assign_documents(tf_idf):
     return docs_for_user
 
 
-
-
 if __name__ == '__main__':
     terms = sorted({term for value in cfg.users.itervalues() for term in value})
     scores = calc_scores(terms)
-    print assign_documents(scores)
+    res = assign_documents(scores)
+    print res
