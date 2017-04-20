@@ -6,12 +6,14 @@ from unicodedata import category
 
 import config as cfg
 import numpy as np
-from time import time
+import time
+# from time import time
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import SGDClassifier
+from sklearn.externals import joblib
 from nltk.corpus import brown
 
 # parameters = {'vect__ngram_range': [(1, 1), (1, 2)],
@@ -27,14 +29,15 @@ pipeline = Pipeline([
 categories = brown.categories()
 
 parameters = {
-'vect__max_df': (0.5, 0.75, 1.0),
-# 'vect__max_features': (None, 5000, 10000, 50000),
-'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
-# 'tfidf__use_idf': (True, False),
-# 'tfidf__norm': ('l1', 'l2'),
-'clf__alpha': (0.00001, 0.000001),
-'clf__penalty': ('l2', 'elasticnet'),  # 'clf__n_iter': (10, 50, 80),
+    'vect__max_df': (0.5, 0.75, 1.0),
+    # 'vect__max_features': (None, 5000, 10000, 50000),
+    'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
+    # 'tfidf__use_idf': (True, False),
+    # 'tfidf__norm': ('l1', 'l2'),
+    'clf__alpha': (0.00001, 0.000001),
+    'clf__penalty': ('l2', 'elasticnet'),  # 'clf__n_iter': (10, 50, 80),
 }
+
 
 def analyse(filepath, clf):
     if not os.path.isfile(filepath):
@@ -47,7 +50,13 @@ def analyse(filepath, clf):
         return score_vec
 
 
-def train():
+def load(model_name):
+    model_path = cfg.model_path + model_name
+    clf = joblib.load(model_path)
+    return clf
+
+
+def train(save=False):
     # Grid search to find best parameters
     # gs_clf = GridSearchCV(pipeline, parameters, n_jobs=-1)
 
@@ -55,11 +64,18 @@ def train():
     # for param_name in sorted(parameters.keys()):
     #     print("%s: %r" % (param_name, gs_clf.best_params_[param_name]))
     print "Training ..."
-    t0 = time()
+    t0 = time.time()
     data = [" ".join(brown.words(categories=category)) for category in categories]
     y = [i for i, _ in enumerate(categories)]
     clf = pipeline.fit(data, y)
-    print("done in %0.3fs" % (time() - t0))
+    print("done in %0.3fs" % (time.time() - t0))
+
+    if save:
+        if not os.path.exists(cfg.model_path):
+            os.makedirs(cfg.model_path)
+
+        file_path = "{}model_{}.model".format(cfg.model_path, time.strftime("%Y%m%d_%H%M%S"))
+        joblib.dump(clf, file_path, compress=9)
 
     # print("Best score: %0.3f" % gs_clf.best_score_)
     # print("Best parameters set:")
@@ -95,8 +111,17 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--vocabulary', dest='voc', default=voc, nargs='+', help='List of terms that can be '
                                                                                        'analysed.')
 
+    parser.add_argument('-s', '--save', dest='save', action='store_true',
+                        help='If set, model will be saved after execution.')
+
+    parser.add_argument('-m', '--model', dest='model', help='The filepath to the previously saved model.')
+
     args = parser.parse_args()
-    clf = train()
+
+    if args.model:
+        clf = load(args.model)
+    else:
+        clf = train(args.save)
     prediction = analyse(args.path, clf)
 
     found_term, users = assign_user(prediction, args.voc, cfg.users)
