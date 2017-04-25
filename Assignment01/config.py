@@ -1,4 +1,4 @@
-users = {'niklas': ['humor', 'science_fiction'], 'luca': ['adventure', 'news'], 'florian': ['mystery', 'religion']}
+users = {'niklas': ['computer', 'sports'], 'luca': ['computer', 'science'], 'florian': ['politics', 'religion']}
 
 threshold = 2.0
 
@@ -9,22 +9,22 @@ model_path = 'model/'
 categories = [
     # 'alt.atheism',
     'comp.graphics',
-    # 'comp.os.ms-windows.misc',
-    # 'comp.sys.ibm.pc.hardware',
-    # 'comp.sys.mac.hardware',
-    # 'comp.windows.x',
+    'comp.os.ms-windows.misc',
+    'comp.sys.ibm.pc.hardware',
+    'comp.sys.mac.hardware',
+    'comp.windows.x',
     # 'misc.forsale',
-    # 'rec.autos',
-    # 'rec.motorcycles',
+    'rec.autos',
+    'rec.motorcycles',
     'rec.sport.baseball',
-    # 'rec.sport.hockey',
-    # 'sci.crypt',
-    # 'sci.electronics',
+    'rec.sport.hockey',
+    'sci.crypt',
+    'sci.electronics',
     'sci.med',
-    # 'sci.space',
-    # 'soc.religion.christian',
-    # 'talk.politics.guns',
-    # 'talk.politics.mideast',
+    'sci.space',
+    'soc.religion.christian',
+    'talk.politics.guns',
+    'talk.politics.mideast',
     'talk.politics.misc',
-    # 'talk.religion.misc'
+    'talk.religion.misc'
 ]

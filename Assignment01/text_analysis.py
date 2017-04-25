@@ -30,6 +30,31 @@ logging.basicConfig(level=logging.INFO,
 #               'clf__alpha': (1e-2, 1e-3)}
 
 
+def load_data():
+    new_categories = {
+        'comp': 'computer',
+        'rec': 'sports',
+        'sci': 'science',
+        'religion': 'religion',
+        'politics': 'politics',
+    }
+
+    data = fetch_20newsgroups(subset='train', categories=cfg.categories)
+    new_target = np.zeros_like(data.target)
+    new_target_names = new_categories.values()
+    new_categories_index = {i: idx for idx, i in enumerate(new_target_names)}
+
+    for oc, nc in new_categories.iteritems():
+        for idx, i in enumerate(data.target_names):
+            if oc in i:
+                new_target[data.target == idx] = new_categories_index[nc]
+
+    data.target = new_target
+    data.target_names = new_target_names
+
+    return data
+
+
 def analyse(filepath, clf):
     if not os.path.isfile(filepath):
         raise IOError('File does not exist: %s' % filepath)
@@ -48,14 +73,18 @@ def load(model_name):
         model_path = cfg.model_path + model_name
 
     print "Loading model ", model_path
-
     clf = joblib.load(model_path)
-    return clf
+    data = load_data()
+
+    return clf, data.target_names
 
 
 def train(save=False):
     print "Training ..."
 
+    data = load_data()
+
+    # TfidfVectorizer combines all the options of CountVectorizer and TfidfTransformer in a single model:
     pipeline = Pipeline([
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
@@ -63,23 +92,16 @@ def train(save=False):
         ('clf', SGDClassifier()),
     ])
 
-    # categories = brown.categories()
-
     parameters = {
         'vect__max_df': (0.5, 0.75, 1.0),
         # 'vect__max_features': (None, 5000, 10000, 50000),
         'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
-        # 'tfidf__use_idf': (True, False),
+        'tfidf__use_idf': (True, False),
         # 'tfidf__norm': ('l1', 'l2'),
         'clf__alpha': (0.00001, 0.000001),
         'clf__penalty': ('l2', 'elasticnet'),  # 'clf__n_iter': (10, 50, 80),
     }
     
-    # data = [" ".join(brown.words(categories=category)) for category in cfg.categories]
-    # # y = [i for i, _ in enumerate(categories)]
-    # y = range(len(categories))
-    data = fetch_20newsgroups(subset='train', categories=cfg.categories)
-
     # Grid search to find best parameters
     grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, verbose=1)
 
@@ -98,10 +120,6 @@ def train(save=False):
     for param_name in sorted(parameters.keys()):
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
     
-    # Previous
-    # clf = pipeline.fit(data, y)
-    # print("done in %0.3fs" % (time.time() - t0))
-
     clf = grid_search.best_estimator_
 
     if save:
@@ -111,22 +129,17 @@ def train(save=False):
         file_path = "{}model_{}.model".format(cfg.model_path, strftime("%Y%m%d_%H%M%S"))
         joblib.dump(clf, file_path, compress=9)
 
-    # print("Best score: %0.3f" % gs_clf.best_score_)
-    # print("Best parameters set:")
-    # best_parameters = gs_clf.best_estimator_.get_params()
-    # for param_name in sorted(parameters.keys()):
-    #     print("\t%s: %r" % (param_name, best_parameters[param_name]))
-    return clf
+    return clf, data.target_names
 
 
-def assign_user(prediction, terms, users):
+def assign_user(prediction, terms, users, labels):
     '''
     Assigns the documents to those useres, that have an interest in this document.
     :param prediction: score for given term and document.
     :return: returns a collection of users.
     '''
     index = prediction[0]
-    label = cfg.categories[index]
+    label = labels[index]
 
     relev_users = []
     for user in users:
@@ -144,7 +157,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--vocabulary', dest='voc', default=voc, nargs='+', 
                         help='List of terms that can be analysed.')
 
-    parser.add_argument('-s', '--save', dest='save', action='store_true', default=True,
+    parser.add_argument('-s', '--save', dest='save', action='store_true',
                         help='If set, model will be saved after execution.')
 
     parser.add_argument('-m', '--model', dest='model', help='The filepath to the previously saved model.')
@@ -155,14 +168,11 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
 
-    if args.model:
-        clf = load(args.model)
-    else:
-        clf = train(args.save)
+    clf, labels = load(args.model) if args.model else train(args.save)
 
     prediction = analyse(args.doc, clf)
 
-    found_term, users = assign_user(prediction, args.voc, cfg.users)
+    found_term, users = assign_user(prediction, args.voc, cfg.users, labels)
     print "RESULTS:"
     print "====================="
     print "The given text is about %s." % (found_term)
