@@ -36,7 +36,7 @@ def tokenize(text):
     return tokens
 
 
-def load_data():
+def load_data(clean=True):
     new_categories = {
         'comp': 'computer',
         'rec': 'sports',
@@ -58,8 +58,9 @@ def load_data():
     data.target = new_target
     data.target_names = new_target_names
 
-    for i in range(len(data.data)):
-        data.data[i] = tokenize(data.data[i])
+    if clean:
+        for i in range(len(data.data)):
+            data.data[i] = tokenize(data.data[i])
 
     return data
 
@@ -68,12 +69,13 @@ def analyse(filepath, clf):
     if not os.path.exists(filepath):
         raise IOError('File does not exist: %s' % filepath)
 
-    if not os.path.isdir(filepath):
-        files = [os.path.basename(filepath)]
-        names = [filepath]
-    else:
+    if os.path.isdir(filepath):
         names = os.listdir(filepath)
         files = [os.path.join(filepath, i) for i in names]
+    else:      
+        files = [filepath]
+        names = [os.path.basename(filepath)]
+    
         
     texts = []
     print "Loading files..."
@@ -97,7 +99,7 @@ def load(model_name):
 
     print "Loading model ", model_path
     clf = joblib.load(model_path)
-    data = load_data()
+    data = load_data(clean=False)
 
     return clf, data.target_names
 
