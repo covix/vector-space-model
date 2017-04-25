@@ -10,6 +10,7 @@ from time import time, strftime
 import sys
 from pprint import pprint
 import logging
+import re
 
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
@@ -19,15 +20,20 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.externals import joblib
 from sklearn.datasets import fetch_20newsgroups
 
+from nltk.stem.snowball import EnglishStemmer
+from nltk.corpus import stopwords
+from nltk import sent_tokenize, word_tokenize
+
 # Display progress logs on stdout
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 
-# from nltk.corpus import brown
 
-# parameters = {'vect__ngram_range': [(1, 1), (1, 2)],
-#               'tfidf__use_idf': (True, False),
-#               'clf__alpha': (1e-2, 1e-3)}
+def tokenize(text):
+    stemmer = EnglishStemmer()
+    # tokens = [stemmer.stem(word) for word in word_tokenize(text) if word.isalpha()]
+    tokens = ' '.join([word for word in word_tokenize(text) if word.isalpha()])
+    return tokens
 
 
 def load_data():
@@ -52,18 +58,35 @@ def load_data():
     data.target = new_target
     data.target_names = new_target_names
 
+    for i in range(len(data.data)):
+        data.data[i] = tokenize(data.data[i])
+
     return data
 
 
 def analyse(filepath, clf):
-    if not os.path.isfile(filepath):
+    if not os.path.exists(filepath):
         raise IOError('File does not exist: %s' % filepath)
 
-    with open(filepath) as file:
-        text = file.read().replace('\n', ' ')
+    if not os.path.isdir(filepath):
+        files = [os.path.basename(filepath)]
+        names = [filepath]
+    else:
+        names = os.listdir(filepath)
+        files = [os.path.join(filepath, i) for i in names]
+        
+    texts = []
+    print "Loading files..."
+    for path in files:
+        print "\tLoading", path
+        with open(path) as f:
+            text = f.read().replace('\n', ' ').decode('latin-1')
+            text = tokenize(text)
+            texts.append(text)
+    
+    scores = clf.predict(texts)
 
-        score_vec = clf.predict([text])
-        return score_vec
+    return scores, names
 
 
 def load(model_name):
@@ -86,7 +109,7 @@ def train(save=False):
 
     # TfidfVectorizer combines all the options of CountVectorizer and TfidfTransformer in a single model:
     pipeline = Pipeline([
-        ('vect', CountVectorizer()),
+        ('vect', CountVectorizer(stop_words='english')),
         ('tfidf', TfidfTransformer()),
         # ('clf', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, n_iter=5, random_state=42)),
         ('clf', SGDClassifier()),
@@ -138,14 +161,19 @@ def assign_user(prediction, terms, users, labels):
     :param prediction: score for given term and document.
     :return: returns a collection of users.
     '''
-    index = prediction[0]
-    label = labels[index]
+    topics, relevant_users = [], []
+    for prediction in predictions:
+        label = labels[prediction]
 
-    relev_users = []
-    for user in users:
-        if label in users[user]:
-            relev_users.append(user)
-    return label, relev_users
+        relev_users = []
+        for user in users:
+            if label in users[user]:
+                relev_users.append(user)
+        
+        topics.append(label)
+        relevant_users.append(relev_users)
+
+    return topics, relevant_users
 
 
 if __name__ == '__main__':
@@ -156,10 +184,8 @@ if __name__ == '__main__':
                         help='The filepath where the text file of the document resides)')
     parser.add_argument('-v', '--vocabulary', dest='voc', default=voc, nargs='+', 
                         help='List of terms that can be analysed.')
-
     parser.add_argument('-s', '--save', dest='save', action='store_true',
                         help='If set, model will be saved after execution.')
-
     parser.add_argument('-m', '--model', dest='model', help='The filepath to the previously saved model.')
 
     args = parser.parse_args()
@@ -170,13 +196,14 @@ if __name__ == '__main__':
 
     clf, labels = load(args.model) if args.model else train(args.save)
 
-    prediction = analyse(args.doc, clf)
+    predictions, names = analyse(args.doc, clf)
 
-    found_term, users = assign_user(prediction, args.voc, cfg.users, labels)
+    topics, users = assign_user(predictions, args.voc, cfg.users, labels)
     print "RESULTS:"
-    print "====================="
-    print "The given text is about %s." % (found_term)
-    if not users:
-        print "The text is not relevant for any user."
-    else:
-        print "The text is relevant for the following users: %s." % (', '.join(users))
+    for i in range(len(names)):
+        print "====================="
+        print "%s is about %s." % (names[i], topics[i])
+        if not users[i]:
+            print "The text is not relevant for any user."
+        else:
+            print "The text is relevant for the following users: %s." % (', '.join(users[i]))

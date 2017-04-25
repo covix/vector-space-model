@@ -1,4 +1,17 @@
-users = {'niklas': ['computer', 'sports'], 'luca': ['computer', 'science'], 'florian': ['politics', 'religion']}
+users = {
+    'niklas': [
+        'computer',
+        'sports'
+    ],
+    'luca': [
+        'computer',
+        'science'
+    ],
+    'florian': [
+        'politics',
+        'sports'
+    ]
+}
 
 threshold = 2.0
 
