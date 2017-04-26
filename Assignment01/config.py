@@ -41,3 +41,11 @@ categories = [
     'talk.politics.misc',
     'talk.religion.misc'
 ]
+
+new_categories = {
+    'comp': 'computer',
+    'rec': 'sports',
+    'sci': 'science',
+    'religion': 'religion',
+    'politics': 'politics',
+}
