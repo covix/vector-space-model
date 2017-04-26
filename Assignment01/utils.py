@@ -19,8 +19,9 @@ def tokenize(text, stem=False):
     return ' '.join(tokens)
 
 
-def load_data(clean=True):
-    data = fetch_20newsgroups(subset='train', categories=cfg.categories)
+def load_data(clean=True, subset='train'):
+    print "Loading %s data..." % subset
+    data = fetch_20newsgroups(subset=subset, categories=cfg.categories)
     new_target = np.zeros_like(data.target)
     new_target_names = cfg.new_categories.values()
     new_categories_index = {i: idx for idx, i in enumerate(new_target_names)}

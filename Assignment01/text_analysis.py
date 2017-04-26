@@ -51,8 +51,7 @@ def train(save=False):
 
     data = load_data()
 
-    # TfidfVectorizer combines all the options of CountVectorizer and
-    # TfidfTransformer in a single model:
+    # TfidfVectorizer combines all the options of CountVectorizer and TfidfTransformer in a single model:
     pipeline = Pipeline([
         ('vect', CountVectorizer(stop_words='english')),
         ('tfidf', TfidfTransformer()),
@@ -98,38 +97,36 @@ def train(save=False):
             cfg.model_path, strftime("%Y%m%d_%H%M%S"))
         joblib.dump(clf, file_path, compress=9)
 
-    return clf, data.target_names
+    return clf
 
 
-def assign_user(predictions, terms, users, labels):
+def assign_user(predictions, users, labels):
     """
     Assigns the documents to those useres, that have an interest in this document.
-    :param prediction: score for given term and document.
+    :param predictions: score for given term and document.
+    :param users: dict in the form of { user_name : list_of_interests }
+    :param labels: labels of the documents
     :return: returns a collection of users.
     """
-    topics, relevant_users = [], []
+    topics, interested_users = [], []
     for prediction in predictions:
         label = labels[prediction]
 
-        relev_users = []
+        u = []
         for user in users:
             if label in users[user]:
-                relev_users.append(user)
+                u.append(user)
 
         topics.append(label)
-        relevant_users.append(relev_users)
+        interested_users.append(u)
 
-    return topics, relevant_users
+    return topics, interested_users
 
 
 def main():
-    voc = sorted({term for value in cfg.users.itervalues() for term in value})
-
     parser = argparse.ArgumentParser(description='Text analysis tool for incoming documents')
     parser.add_argument('-d', '--doc', dest='doc', required=True,
                         help='The filepath where the text file of the document resides)')
-    parser.add_argument('-v', '--vocabulary', dest='voc', default=voc, nargs='+',
-                        help='List of terms that can be analysed.')
     parser.add_argument('-s', '--save', dest='save', action='store_true',
                         help='If set, model will be saved after execution.')
     parser.add_argument('-m', '--model', dest='model', help='The filepath to the previously saved model.')
@@ -145,7 +142,7 @@ def main():
 
     predictions, names = analyse(args.doc, clf)
 
-    topics, users = assign_user(predictions, args.voc, cfg.users, labels)
+    topics, users = assign_user(predictions, cfg.users, labels)
     print "RESULTS:"
     for i in range(len(names)):
         print "====================="

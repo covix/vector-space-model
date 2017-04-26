@@ -1,22 +1,17 @@
 #!/usr/bin/env python2
 
-import numpy as np
-
-from sklearn.manifold import TSNE
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.metrics.pairwise import cosine_similarity
-
-import matplotlib.pyplot as plt
-
-from text_analysis import load, load_data
-
 import sys
 
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.decomposition import TruncatedSVD
+from sklearn.manifold import TSNE
+
+from utils import load_model, load_data
 
 if __name__ == '__main__':
     model_name = sys.argv[1]
-    clf, target_names = load(model_name)
+    clf = load_model(model_name)
     data = load_data()
 
     target_labels = np.array([data.target_names[i] for i in data.target])
@@ -33,12 +28,9 @@ if __name__ == '__main__':
 
     for i in np.unique(data.target):
         X = X_embedded[data.target == i]
-        plt.scatter(X[:, 0], X[:, 1], s=8, label=target_names[i], alpha=0.5)
+        plt.scatter(X[:, 0], X[:, 1], s=8, label=data.target_names[i], alpha=0.5)
 
     plt.legend(scatterpoints=1)
     plt.axes().set_aspect('equal', 'datalim')
 
     plt.show()
-
-
-    
