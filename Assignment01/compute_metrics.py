@@ -64,11 +64,12 @@ if __name__ == "__main__":
     print "Cross Validation Accuracy: %0.2f (+/- %0.2f)" % (cv_scores.mean(), cv_scores.std() * 2)
 
     # refitting the classifier only on training data
-    clf = clf.fit(X_train, y_train)
+    # clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     print classification_report(y_test, y_pred, target_names=train_data.target_names)
     print "Accuracy on 20 newspaper test data: %0.2f" % accuracy_score(y_test, y_pred)
+    print
 
     np.set_printoptions(precision=2)
     cnf_matrix = confusion_matrix(y_test, y_pred)
