@@ -21,7 +21,7 @@ from utils import load_model, load_target_names, tokenize, load_data
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 
-def analyse(filepath, clf):
+def predict(filepath, clf):
     if not os.path.exists(filepath):
         raise IOError('File does not exist: %s' % filepath)
 
@@ -65,7 +65,7 @@ def train(save=False):
         'vect__ngram_range': ((1, 1), (1, 2)),  # unigrams or bigrams
         'tfidf__use_idf': (True, False),
         # 'tfidf__norm': ('l1', 'l2'),
-        'clf__alpha': (0.00001, 0.000001),
+        'clf__alpha': (0.0001, 0.00001),
         'clf__penalty': ('l2', 'elasticnet'),  # 'clf__n_iter': (10, 50, 80),
     }
 
@@ -140,7 +140,7 @@ def main():
     clf = load_model(args.model) if args.model else train(args.save)
     labels = load_target_names()
 
-    predictions, names = analyse(args.doc, clf)
+    predictions, names = predict(args.doc, clf)
 
     topics, users = assign_user(predictions, cfg.users, labels)
     print "RESULTS:"
