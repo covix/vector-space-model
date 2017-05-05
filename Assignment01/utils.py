@@ -34,9 +34,11 @@ def load_data(clean=True, subset='train'):
     data.target = new_target
     data.target_names = new_target_names
 
-    if clean:
-        for i in range(len(data.data)):
+
+    for i in range(len(data.data)):
+        if clean:
             data.data[i] = tokenize(data.data[i])
+        data.data[i] = data.data[i].lower()
 
     return data
 
