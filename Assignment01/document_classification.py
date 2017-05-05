@@ -39,6 +39,7 @@ def predict(filepath, clf):
         with open(path) as f:
             text = f.read().replace('\n', ' ').decode('latin-1')
             text = tokenize(text)
+            text = text.lower()
             texts.append(text)
 
     scores = clf.predict(texts)
