@@ -8,7 +8,7 @@ pip2 install -r requirements.txt
 ```
 
 ## Usage
-To run the program, you can either use the provided run script or execute the python srict yourself. The runscript will train a model on the 20newsgroup dataset and execute it with all the documents provided in the "docs" folder. 
+To run the program, you can either use the provided `run.sh` or execute the python script yourself. The runscript will train a model on the 20newsgroup dataset and execute it with all the documents provided in the "docs" folder. 
 To run the script by hand, the following arguments can be used:
 ```
 -d or --doc: Path to documents that are supposed to be classified.
