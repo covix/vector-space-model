@@ -1,4 +1,4 @@
-C:\Users\Florian\Anaconda2\python.exe "E:/Documents/Studium/Master/3.Semester/Information Extraction, Retrieval and Integration/Code/TextIR/Assignment01/document_classification.py" -d docs -s
+$ ./run.sh 
 Training ...
 Loading train data...
 Performing grid search...
@@ -10,24 +10,24 @@ parameters:
  'vect__max_df': (0.5, 0.75, 1.0),
  'vect__ngram_range': ((1, 1), (1, 2))}
 Fitting 3 folds for each of 48 candidates, totalling 144 fits
-[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:  3.6min
-[Parallel(n_jobs=-1)]: Done 144 out of 144 | elapsed: 13.0min finished
-done in 794.598s
+[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:  2.9min
+[Parallel(n_jobs=-1)]: Done 144 out of 144 | elapsed:  9.8min finished
+done in 600.136s
 ()
-Best score: 0.964
+Best score: 0.966
 Best parameters set:
-	clf__alpha: 0.0001
-	clf__penalty: 'l2'
-	tfidf__use_idf: True
-	vect__max_df: 0.5
-	vect__ngram_range: (1, 2)
+    clf__alpha: 0.0001
+    clf__penalty: 'l2'
+    tfidf__use_idf: True
+    vect__max_df: 0.5
+    vect__ngram_range: (1, 2)
 Loading train data...
 Loading files...
-	Loading docs\basketball.txt
-	Loading docs\cooking.txt
-	Loading docs\data_science.txt
-	Loading docs\football.txt
-	Loading docs\tennis.txt
+    Loading docs/basketball.txt
+    Loading docs/cooking.txt
+    Loading docs/data_science.txt
+    Loading docs/football.txt
+    Loading docs/tennis.txt
 RESULTS:
 =====================
 basketball.txt is about sports.
@@ -45,36 +45,34 @@ The text is relevant for the following users: niklas, florian.
 tennis.txt is about sports.
 The text is relevant for the following users: niklas, florian.
 
-Process finished with exit code 0
 
-
-C:\Users\Florian\Anaconda2\python.exe "E:/Documents/Studium/Master/3.Semester/Information Extraction, Retrieval and Integration/Code/TextIR/Assignment01/compute_metrics.py" model_20170504_104621.model
+$ python compute_metrics.py model/model_20170507_105057.model 
 Loading train data...
 Loading test data...
-Loading model  model/model_20170504_104621.model
+Loading model  model/model_20170507_105057.model
 Starting 5-folds cross validation...
 Cross Validation Accuracy: 0.97 (+/- 0.01)
              precision    recall  f1-score   support
 
-   politics       0.95      0.94      0.94      1050
-   computer       0.90      0.98      0.94      1955
-   religion       0.95      0.91      0.93       649
-    science       0.94      0.86      0.90      1579
-     sports       0.97      0.97      0.97      1590
+     sports       0.96      0.98      0.97      1590
+    science       0.94      0.87      0.90      1579
+   computer       0.90      0.97      0.94      1955
+   politics       0.96      0.92      0.94      1050
+   religion       0.93      0.94      0.93       968
 
-avg / total       0.94      0.94      0.94      6823
+avg / total       0.94      0.94      0.94      7142
 
 Accuracy on 20 newspaper test data: 0.94
 
 Confusion matrix, without normalization
-[[ 987   10   18   25   10]
- [   2 1909    4   24   16]
- [  20   19  593   14    3]
- [  22  168    8 1357   24]
- [   8   15    1   16 1550]]
+[[1551   18   14    4    3]
+ [  26 1369  157   14   13]
+ [  18   26 1900    2    9]
+ [  11   22   11  962   44]
+ [   4   18   20   19  907]]
 Normalized confusion matrix
-[[ 0.94  0.01  0.02  0.02  0.01]
- [ 0.    0.98  0.    0.01  0.01]
- [ 0.03  0.03  0.91  0.02  0.  ]
- [ 0.01  0.11  0.01  0.86  0.02]
- [ 0.01  0.01  0.    0.01  0.97]]
+[[ 0.98  0.01  0.01  0.    0.  ]
+ [ 0.02  0.87  0.1   0.01  0.01]
+ [ 0.01  0.01  0.97  0.    0.  ]
+ [ 0.01  0.02  0.01  0.92  0.04]
+ [ 0.    0.02  0.02  0.02  0.94]]

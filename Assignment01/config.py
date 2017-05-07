@@ -20,7 +20,7 @@ doc_path = 'docs/'
 model_path = 'model/'
 
 categories = [
-    # 'alt.atheism',
+    'alt.atheism',
     'comp.graphics',
     'comp.os.ms-windows.misc',
     'comp.sys.ibm.pc.hardware',
@@ -48,4 +48,5 @@ new_categories = {
     'sci': 'science',
     'religion': 'religion',
     'politics': 'politics',
+    'atheism': 'religion'
 }

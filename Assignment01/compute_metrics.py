@@ -48,6 +48,10 @@ def plot_confusion_matrix(cm, classes,
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print "This script should be called with the path of the model to use"
+        sys.exit()
+
     model_name = sys.argv[1]
 
     train_data = load_data(subset='train')

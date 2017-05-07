@@ -19,4 +19,5 @@ For example:
 $ python2 text_analysis.py -d docs -s
 $ python2 text_analysis.py -d docs -m model_20170425_213040.model
 ```
+
 The script `run.sh` can be used to directly run an example that will train a model on the 20newsgroup dataset and will classify the documents inside `docs`
