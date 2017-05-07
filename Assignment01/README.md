@@ -26,3 +26,6 @@ For example:
 ```sh
 $ python2 compute_metrics.py model_20170425_213040.model
 ```
+
+The same holds also for the `plot_tfidf.py` script.
+
